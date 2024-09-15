@@ -1,0 +1,22 @@
+{
+  "name": "backend",
+  "scripts": {
+    "dev": "wrangler dev src/index.ts",
+    "deploy": "wrangler deploy --minify src/index.ts",
+    "db:migrate": "drizzle-kit mirgate",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "LOCAL_DB_PATH=$(find .wrangler/state/v3/d1/miniflare-D1DatabaseObject -type f -name '*.sqlite' -print -quit) drizzle-kit studio"
+  },
+  "dependencies": {
+    "@hono-rate-limiter/cloudflare": "^0.2.1",
+    "@libsql/client": "^0.11.0",
+    "drizzle-orm": "^0.33.0",
+    "hono": "^4.6.1",
+    "hono-rate-limiter": "^0.4.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240529.0",
+    "drizzle-kit": "^0.24.2",
+    "wrangler": "^3.57.2"
+  }
+}
