@@ -8,18 +8,19 @@ def write_to_sql(records, db_name):
     cursor = conn.cursor()
 
     cursor.execute("DROP TABLE IF EXISTS statement")
-    cursor.execute(
-        """
+    cursor.execute("""
                    CREATE TABLE statement
-                     (date text, doc_no text, description text, credit real)
-                   """
-    )
+                   (id integer, date text, doc_no text, description text, credit real)
+                   """)
 
-    with tqdm(total=len(records), desc="Writing to database") as pbar:
-        for record in records:
+    total_records = len(records)
+    with tqdm(total=total_records, desc="Writing to database") as pbar:
+        for i in range(total_records):
+            record = records[i]
             cursor.execute(
-                "INSERT INTO statement VALUES (?, ?, ?, ?)",
+                "INSERT INTO statement VALUES (?, ?, ?, ?, ?)",
                 (
+                    i + 1,
                     record["date"],
                     record["doc_no"],
                     record["description"],
@@ -37,9 +38,10 @@ def write_to_csv(records, filename):
 
     with open(filename, "w", newline="") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
         writer.writeheader()
-        for record in records:
-            writer.writerow(record)
+        with tqdm(total=len(records), desc="Writing to CSV file") as pbar:
+            for record in records:
+                writer.writerow(record)
+                pbar.update(1)
 
     print(f"CSV file '{filename}' has been created successfully.")

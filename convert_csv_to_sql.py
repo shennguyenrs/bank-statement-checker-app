@@ -11,11 +11,13 @@ def convert_to_sql(file_path):
 
             # Create table
             output.write("DROP TABLE IF EXISTS statement;\n")
-            output.write("CREATE TABLE statement (date text, doc_no text, description text, credit real);\n")
+            output.write("CREATE TABLE statement (id integer, date text, doc_no text, description text, credit real);\n")
 
             # Write rows
+            id = 1
             for row in reader:
-                output.write(f"INSERT INTO statement VALUES ({', '.join(['"' + value.replace("'", "''") + '"' for value in row])});\n")
+                output.write(f"INSERT INTO statement VALUES ({id}, {', '.join(['"' + value.replace("'", "''") + '"' for value in row])});\n")
+                id += 1
 
 
 def main():
