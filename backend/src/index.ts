@@ -2,6 +2,7 @@ import { WorkersKVStore } from "@hono-rate-limiter/cloudflare";
 import { Hono } from "hono";
 import { rateLimiter } from "hono-rate-limiter";
 import { bearerAuth } from "hono/bearer-auth";
+import { cors } from "hono/cors";
 
 import statement from "./controllers/statement";
 
@@ -13,6 +14,7 @@ export interface Env {
 
 // App
 const app = new Hono<{ Bindings: Env }>();
+app.use("*", cors({ origin: "*", allowMethods: ["GET"] }));
 app.use((c, next) =>
   rateLimiter<{ Bindings: Env }>({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -22,10 +24,7 @@ app.use((c, next) =>
     store: new WorkersKVStore({ namespace: c.env.KV }),
   })(c, next),
 );
-app.use(
-  "/api/v1/*",
-  bearerAuth({ verifyToken: (token, c) => token === c.env.TOKEN }),
-);
+app.use("*", bearerAuth({ verifyToken: (token, c) => token === c.env.TOKEN }));
 
 app.route("/api/v1/statements", statement);
 
