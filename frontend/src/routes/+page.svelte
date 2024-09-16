@@ -9,6 +9,7 @@
 	$: sortBy = 'date.asc';
 	$: pageSize = 10;
 	$: currentPage = 1;
+	$: totalPages = 10;
 
 	function formatMontery(amount: number) {
 		return amount.toLocaleString('vi-VN');
@@ -39,6 +40,13 @@
 		});
 		const data = await res.json();
 		rows = data.rows;
+	}
+
+	function goToPage(page: number) {
+		if (page >= 1 && page <= totalPages) {
+			currentPage = page;
+			// handleFilter();
+		}
 	}
 </script>
 
@@ -105,3 +113,41 @@
 		{/each}
 	</tbody>
 </table>
+<div class="mt-4 flex items-center justify-between">
+	<div>
+		Showing {(currentPage - 1) * pageSize + 1} to {Math.min(
+			currentPage * pageSize,
+			data.data.total
+		)} of {data.data.total} entries
+	</div>
+	<div class="flex gap-2">
+		<button
+			class="rounded-md bg-gray-200 px-3 py-1 disabled:opacity-50"
+			on:click={() => goToPage(currentPage - 1)}
+			disabled={currentPage === 1}
+		>
+			Previous
+		</button>
+		{#each Array(totalPages) as _, i}
+			{#if i < 2 || i === totalPages - 1 || i + 1 === currentPage}
+				<button
+					class="rounded-md px-3 py-1 {currentPage === i + 1
+						? 'bg-zinc-800 text-white'
+						: 'bg-gray-200'}"
+					on:click={() => goToPage(i + 1)}
+				>
+					{i + 1}
+				</button>
+			{:else if i === 2 || i === totalPages - 2}
+				<span class="px-1">...</span>
+			{/if}
+		{/each}
+		<button
+			class="rounded-md bg-gray-200 px-3 py-1 disabled:opacity-50"
+			on:click={() => goToPage(currentPage + 1)}
+			disabled={currentPage === totalPages}
+		>
+			Next
+		</button>
+	</div>
+</div>
