@@ -9,17 +9,17 @@
 	$: sortBy = 'date.asc';
 	$: pageSize = 10;
 	$: currentPage = 1;
-	$: totalPages = 10;
+	$: totalPages = data.data.totalPages ?? 0;
 
 	function formatMontery(amount: number) {
 		return amount.toLocaleString('vi-VN');
 	}
 
-	async function handleFilter() {
+	async function handleFilter(page: number) {
 		const sortParts = sortBy.split('.');
 		const query = qs.stringify(
 			{
-				page: currentPage,
+				page,
 				pageSize,
 				description,
 				sortBy: sortParts[0],
@@ -39,14 +39,17 @@
 			}
 		});
 		const data = await res.json();
+
+		// Map response to frontend
 		rows = data.rows;
+		totalPages = data.totalPages;
+		pageSize = data.pageSize;
+		sortBy = `${data.sortBy}.${data.sort}`;
 	}
 
-	function goToPage(page: number) {
-		if (page >= 1 && page <= totalPages) {
-			currentPage = page;
-			// handleFilter();
-		}
+	async function goToPage(page: number) {
+		currentPage = page;
+		await handleFilter(page);
 	}
 </script>
 
@@ -72,9 +75,9 @@
 			bind:value={sortBy}
 		>
 			<option value="date.asc">Date from earliest</option>
-			<option value="date.esc">Date from latest</option>
-			<option value="credit.asc">Amount largest to smallest</option>
-			<option value="credit.esc">Amount smallest to largest</option>
+			<option value="date.desc">Date from latest</option>
+			<option value="credit.desc">Amount largest to smallest</option>
+			<option value="credit.asc">Amount smallest to largest</option>
 		</select>
 		<select
 			class="rounded-md border border-gray-50 bg-gray-50 px-2"
@@ -88,7 +91,7 @@
 		</select>
 		<button
 			class="rounded-md bg-zinc-800 px-4 py-2 text-white transition-all duration-300 ease-in-out hover:scale-105 hover:bg-zinc-700 active:scale-95"
-			on:click={handleFilter}>Filter</button
+			on:click={() => handleFilter(1)}>Filter</button
 		>
 	</div>
 </div>
@@ -115,10 +118,8 @@
 </table>
 <div class="mt-4 flex items-center justify-between">
 	<div>
-		Showing {(currentPage - 1) * pageSize + 1} to {Math.min(
-			currentPage * pageSize,
-			data.data.total
-		)} of {data.data.total} entries
+		Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, totalPages)} of {totalPages}
+		entries
 	</div>
 	<div class="flex gap-2">
 		<button
@@ -131,9 +132,10 @@
 		{#each Array(totalPages) as _, i}
 			{#if i < 2 || i === totalPages - 1 || i + 1 === currentPage}
 				<button
-					class="rounded-md px-3 py-1 {currentPage === i + 1
-						? 'bg-zinc-800 text-white'
-						: 'bg-gray-200'}"
+					class={[
+						'rounded-md px-3 py-1 transition-all duration-300 ease-in-out hover:scale-105 active:scale-95',
+						currentPage === i + 1 ? 'bg-zinc-800 text-white' : 'bg-gray-200'
+					].join(' ')}
 					on:click={() => goToPage(i + 1)}
 				>
 					{i + 1}
