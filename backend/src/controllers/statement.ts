@@ -8,19 +8,19 @@ import type { Env } from "../index";
 const router = new Hono<{ Bindings: Env }>();
 
 router.get("/", async (c) => {
-  let { description, page, size, sort, sortBy } = c.req.query();
+  let { description, page, pageSize, sort, sortBy } = c.req.query();
 
   // Validate page, size, sort
   if (!page || isNaN(Number(page))) {
     page = "1";
   }
 
-  if (!size || isNaN(Number(size))) {
-    size = "10";
+  if (!pageSize || isNaN(Number(pageSize))) {
+    pageSize = "10";
   }
 
   const pageNum = Number(page);
-  const sizeNum = Number(size);
+  const sizeNum = Number(pageSize);
   const orderBy = getSortBy({ sort, sortBy, sqlCols: statement });
 
   const db = drizzle(c.env.DB);
@@ -38,20 +38,22 @@ router.get("/", async (c) => {
 
   const countRows = await db
     .select({
-      value: count()
+      value: count(),
     })
     .from(statement)
     .where(
       description?.trim().length > 0
         ? like(statement.description, `%${description.trim()}%`)
         : undefined,
-    )
+    );
 
   return c.json({
     rows,
     currentPage: pageNum,
     pageSize: sizeNum,
     totalPages: Math.ceil(countRows[0].value / sizeNum),
+    sort,
+    sortBy,
   });
 });
 
