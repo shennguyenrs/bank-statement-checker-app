@@ -14,7 +14,10 @@ export interface Env {
 
 // App
 const app = new Hono<{ Bindings: Env }>();
-app.use("*", cors({ origin: "*", allowMethods: ["GET"] }));
+app.use(
+  "*",
+  cors({ origin: (origin, c) => c.env.CLIENT_ORIGIN, allowMethods: ["GET"] }),
+);
 app.use((c, next) =>
   rateLimiter<{ Bindings: Env }>({
     windowMs: 15 * 60 * 1000, // 15 minutes
