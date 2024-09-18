@@ -1,7 +1,7 @@
 <script lang="ts">
 	import qs from 'qs';
-
 	import type { PageData } from './$types';
+	import { API_BASE_URL, API_TOKEN } from '$lib/constants';
 
 	export let data: PageData;
 	$: rows = data.data.rows;
@@ -30,12 +30,12 @@
 			}
 		);
 
-		const url = `${import.meta.env.VITE_API_BASE_URL}/statements?${query}`;
+		const url = `${API_BASE_URL}/statements?${query}`;
 		const res = await fetch(url, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
-				Authorization: `Bearer ${import.meta.env.VITE_API_TOKEN}`
+				Authorization: `Bearer ${API_TOKEN}`
 			}
 		});
 		const data = await res.json();
